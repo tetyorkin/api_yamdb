@@ -8,7 +8,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     # filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre', 'name', 'year')
+    # filterset_fields = ('category', 'genre', 'name', 'year')
 
 
 class CategoryList(generics.ListCreateAPIView):

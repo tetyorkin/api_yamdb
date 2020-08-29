@@ -30,9 +30,7 @@ class User(AbstractUser):
     bio = models.TextField(max_length=500, blank=True, null=True)
     first_name = models.CharField(_('first name'), max_length=30, blank=True, null=True)
     last_name = models.CharField(_('last name'), max_length=150, blank=True, null=True)
-
-    def __str__(self):
-        return self.username
+    objects = CustomUserManager()
 
 
 class Category(models.Model):

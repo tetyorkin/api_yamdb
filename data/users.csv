@@ -1,6 +1,6 @@
-id,username,email,role,description,first_name,last_name
-100,bingobongo,bingobongo@yamdb.fake,user,,,
-101,capt_obvious,capt_obvious@yamdb.fake,admin,,,
-102,faust,faust@yamdb.fake,user,,,
-103,reviewer,reviewer@yamdb.fake,user,,,
-104,angry,angry@yamdb.fake,moderator,,,
+id,username,email,role,description,first_name,last_name,password,is_superuser,is_staff,is_active,date_joined
+100,bingobongo,bingobongo@yamdb.fake,user,,,,Beeline123,False,False,True,2020-01-13T23:20:02.422Z
+101,capt_obvious,capt_obvious@yamdb.fake,admin,,,,Beeline123,True,True,True,2020-01-13T23:20:02.422Z
+102,faust,faust@yamdb.fake,user,,,,Beeline123,False,False,True,2020-01-13T23:20:02.422Z
+103,reviewer,reviewer@yamdb.fake,user,,,,Beeline123,False,False,True,2020-01-13T23:20:02.422Z
+104,angry,angry@yamdb.fake,moderator,,,,Beeline123,False,True,True,2020-01-13T23:20:02.422Z

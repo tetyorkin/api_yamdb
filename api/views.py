@@ -34,5 +34,4 @@ class GenreList(generics.ListCreateAPIView):
 class GenreDestroy(generics.DestroyAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = (filters.SearchFilter,)
     lookup_field = 'slug'

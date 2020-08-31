@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from django.contrib import admin
-from .models import Category, Genre, Title
+from .models import Category, Genre, Title, GenreTitle
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -17,10 +17,16 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "category", "genre", "year")
+    list_display = ("pk", "name", "category", "year")
+    empty_value_display = '-пусто-'
+
+
+class GenreTitleAdmin(admin.ModelAdmin):
+    list_display = ("pk", "title_id", "genre_id")
     empty_value_display = '-пусто-'
 
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Title, TitleAdmin)
+admin.site.register(GenreTitle, GenreTitleAdmin)

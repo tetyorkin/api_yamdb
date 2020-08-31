@@ -1,24 +1,35 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, generics, filters
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import viewsets, generics, filters, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
+
 
 from .models import Category, Genre, Title, User
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, EmailSerializer, TokenGainSerializer, \
     UserSerializer
-from rest_framework.views import APIView
-from rest_framework import status
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from rest_framework_simplejwt.tokens import AccessToken
-from .permissions import AdminPermission
+from .permissions import AdminPermission, IsAdminOrReadOnly
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('category', 'genre', 'name', 'year')
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('category', 'genre__slug', 'name', 'year')
+
+    def perform_create(self, serializer):
+        category = get_object_or_404(Category, slug=self.request.data.get('category'))
+        geners = []
+        for slug in self.request.data.getlist('genre'):
+            genre = get_object_or_404(Genre, slug=slug)
+            geners.append(genre)
+        serializer.save(category=category, genre=geners)
 
 
 class CategoryList(generics.ListCreateAPIView):
@@ -26,12 +37,14 @@ class CategoryList(generics.ListCreateAPIView):
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CategoryDestroy(generics.DestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
+    permission_classes = (AdminPermission,)
 
 
 class GenreList(generics.ListCreateAPIView):
@@ -39,13 +52,14 @@ class GenreList(generics.ListCreateAPIView):
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenreDestroy(generics.DestroyAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    filter_backends = (filters.SearchFilter,)
     lookup_field = 'slug'
+    permission_classes = (AdminPermission,)
 
 
 @api_view(['POST'])

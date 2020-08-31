@@ -15,19 +15,17 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class GenreTitleSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('id', 'genre_id', 'title_id')
-        model = GenreTitle
-
-
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreTitleSerializer(many=True, read_only=True)
-    category = CategorySerializer()
+
+    def __init__(self, *args, **kwargs):
+        super(TitleSerializer, self).__init__(*args, **kwargs)
+        if 'view' in self.context and self.context['view'].action != 'create':
+            self.fields.update({"category": CategorySerializer(), "genre": GenreSerializer(many=True)})
 
     class Meta:
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
         model = Title
+        depth = 1
 
 
 class EmailSerializer(serializers.Serializer):

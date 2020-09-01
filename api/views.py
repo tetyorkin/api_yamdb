@@ -14,22 +14,15 @@ from .models import Category, Genre, Title, User
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, EmailSerializer, TokenGainSerializer, \
     UserSerializer
 from .permissions import AdminPermission, IsAdminOrReadOnly
+from .filters import TitleFilter
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
     serializer_class = TitleSerializer
+    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre__slug', 'name', 'year')
-
-    def perform_create(self, serializer):
-        category = get_object_or_404(Category, slug=self.request.data.get('category'))
-        geners = []
-        for slug in self.request.data.getlist('genre'):
-            genre = get_object_or_404(Genre, slug=slug)
-            geners.append(genre)
-        serializer.save(category=category, genre=geners)
+    filterset_class = TitleFilter
 
 
 class CategoryList(generics.ListCreateAPIView):

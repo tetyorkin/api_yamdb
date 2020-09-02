@@ -7,7 +7,8 @@ from api import views
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'titles', views.TitleViewSet)
-router.register(r'titles/(?P<title_id>\d+)/reviews', views.ReviewView, basename='review')
+router.register(r'titles/(?P<title_id>\d+)/reviews', views.ReviewViewSet, basename='review')
+router.register(r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments', views.CommentViewSet, basename='comment')
 
 urlpatterns = [
     path('v1/users/me/', views.UserInfo.as_view()),

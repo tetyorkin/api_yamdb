@@ -8,12 +8,13 @@ from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 from .models import Category, Genre, Title, User, Review, Comment
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, EmailSerializer, TokenGainSerializer, \
     UserSerializer, ReviewSerializer, CommentSerializer
-from .permissions import AdminPermission, IsAdminOrReadOnly
+from .permissions import AdminPermission, IsAdminOrReadOnly, IsAuthenticatedRole
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -62,8 +63,9 @@ class GenreDestroy(generics.DestroyAPIView):
     permission_classes = (AdminPermission,)
 
 
-class ReviewView(viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
+    permission_classes = (IsAuthenticatedRole,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -77,8 +79,21 @@ class ReviewView(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        reviews = get_object_or_404(Title, pk=title_id).reviews.all()
+        review_id = self.kwargs.get('review_id')
+        comment = get_object_or_404(reviews, pk=review_id).comments
+        return comment.all()
+
+    def perform_create(self, serializer):
+        #title_id = self.kwargs.get('title_id')
+        #reviews = get_object_or_404(Title, pk=title_id).reviews.all()
+        review_id = self.kwargs.get('review_id')
+        serializer.save(author=self.request.user)
 
 @api_view(['POST'])
 def send_confirmation_code(request):

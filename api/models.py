@@ -67,6 +67,9 @@ class Review(models.Model):
     score = models.IntegerField()
     pub_date = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ['author', 'title']
+
     def __str__(self):
         return self.text
 

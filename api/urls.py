@@ -2,11 +2,12 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from . import views
+from api import views
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'titles', views.TitleViewSet)
+router.register(r'titles/(?P<title_id>\d+)/reviews', views.ReviewView, basename='review')
 
 urlpatterns = [
     path('v1/users/me/', views.UserInfo.as_view()),

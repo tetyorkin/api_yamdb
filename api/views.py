@@ -4,15 +4,15 @@ from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, generics, filters, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
 
-from .models import Category, Genre, Title, User
+from .models import Category, Genre, Title, User, Review, Comment
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, EmailSerializer, TokenGainSerializer, \
-    UserSerializer
+    UserSerializer, ReviewSerializer, CommentSerializer
 from .permissions import AdminPermission, IsAdminOrReadOnly
 
 
@@ -61,6 +61,24 @@ class GenreDestroy(generics.DestroyAPIView):
     lookup_field = 'slug'
     permission_classes = (AdminPermission,)
 
+
+class ReviewView(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        reviews = get_object_or_404(Title, pk=title_id).reviews
+        return reviews.all()
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        serializer.save(author=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
 @api_view(['POST'])
 def send_confirmation_code(request):

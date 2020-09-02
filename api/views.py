@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 
 from rest_framework import viewsets, generics, filters, status
 from rest_framework.decorators import api_view, action
@@ -23,6 +24,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre__slug', 'name', 'year')
+
+    def get_queryset(self):
+        rating =Review.objects.aggregate(rating=Avg('score'))
+        return rating
 
     def perform_create(self, serializer):
         category = get_object_or_404(Category, slug=self.request.data.get('category'))
@@ -75,7 +80,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
-        serializer.save(author=self.request.user)
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

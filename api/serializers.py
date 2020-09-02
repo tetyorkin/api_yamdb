@@ -45,10 +45,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
-    title = serializers.SlugRelatedField(slug_field='name', queryset=Title.objects.all())
+    #title = serializers.SlugRelatedField(slug_field='name', queryset=Title.objects.all())
 
     class Meta:
-        fields = '__all__'
+        exclude = ('title',)
+        #fields = '__all__'
         model = Review
 
 

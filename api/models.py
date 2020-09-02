@@ -2,7 +2,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **kwargs):
@@ -64,7 +64,7 @@ class Review(models.Model):
     title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name='reviews')
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    score = models.IntegerField()
+    score = models.IntegerField(default=0, validators=[MaxValueValidator(10), MinValueValidator(1)])
     pub_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

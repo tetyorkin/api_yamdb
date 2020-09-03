@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import IsAuthenticated
 
 
 from .models import Category, Genre, Title, User
@@ -91,10 +92,12 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     lookup_field = 'username'
     serializer_class = UserSerializer
-    permission_classes = [AdminPermission]
+    permission_classes = (AdminPermission,)
 
 
 class UserInfo(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         queryset = User.objects.get(username=request.user.username)
         serializer = UserSerializer(queryset)

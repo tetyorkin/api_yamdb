@@ -19,15 +19,11 @@ from .permissions import AdminPermission, IsAdminOrReadOnly, IsAuthenticatedRole
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre__slug', 'name', 'year')
-
-    def get_queryset(self):
-        rating =Review.objects.aggregate(rating=Avg('score'))
-        return rating
 
     def perform_create(self, serializer):
         category = get_object_or_404(Category, slug=self.request.data.get('category'))
@@ -80,7 +76,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
-        serializer.save(author=self.request.user, title=title)
+        author = self.request.user
+        serializer.save(author=author, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

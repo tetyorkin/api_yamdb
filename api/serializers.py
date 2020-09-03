@@ -49,21 +49,21 @@ class ReviewSerializer(serializers.ModelSerializer):
     #title = serializers.SlugRelatedField(slug_field='name', queryset=Title.objects.all())
 
     class Meta:
-        #fields = '__all__'
-        exclude = ('id',)
+        fields = '__all__'
         model = Review
-        validators =[
-            UniqueTogetherValidator(
-                queryset = Review.objects.all(),
-                fields=['author', 'title']
-            )
-        ]
+    
+    def validate(self, data):
+        title = data['title']
+        author = data['author']
+        if title.reviews.filter(author=author):
+            raise serializers.ValidationError('Error')
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     #title = serializers.SlugRelatedField(slug_field='name', queryset=Title.objects.all())
-    review = serializers.SlugRelatedField(slug_field='text', queryset=Review.objects.all())
+    #review = serializers.SlugRelatedField(slug_field='text', queryset=Review.objects.all())
     
     class Meta:
         fields = '__all__'

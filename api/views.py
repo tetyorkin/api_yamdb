@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, generics, filters, status
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
@@ -93,6 +94,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     serializer_class = UserSerializer
     permission_classes = (AdminPermission,)
+    pagination_class = PageNumberPagination
 
 
 class UserInfo(APIView):
@@ -101,12 +103,12 @@ class UserInfo(APIView):
     def get(self, request):
         queryset = User.objects.get(username=request.user.username)
         serializer = UserSerializer(queryset)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     def patch(self, request):
         user = User.objects.get(username=request.user.username)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data)
+        return Response(serializer.errors)

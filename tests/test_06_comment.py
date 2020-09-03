@@ -1,6 +1,6 @@
 import pytest
 
-from tests.common import auth_client, create_reviews, create_comments
+from .common import auth_client, create_reviews, create_comments
 
 
 class Test06CommentAPI:

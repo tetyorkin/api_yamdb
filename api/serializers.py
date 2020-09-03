@@ -1,9 +1,7 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 
-from .models import Category, Genre, Title
-User = get_user_model()
+from .models import Category, Genre, Title, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -64,7 +62,6 @@ class TokenGainSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
-        fields = ('first_name', 'last_name', 'username', 'bio', 'email', 'role',)
+        fields = ('first_name', 'last_name', 'username', 'bio', 'email', 'role', )
         model = User

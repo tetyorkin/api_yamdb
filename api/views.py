@@ -10,6 +10,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.permissions import IsAuthenticated
 
 
 from .models import Category, Genre, Title, User, Review, Comment
@@ -20,18 +26,17 @@ from .permissions import AdminPermission, IsAdminOrReadOnly, IsAuthenticatedRole
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    UserSerializer
+from .permissions import AdminPermission, IsAdminOrReadOnly
+from .filters import TitleFilter
+
+
+class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
+    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre__slug', 'name', 'year')
-
-    def perform_create(self, serializer):
-        category = get_object_or_404(Category, slug=self.request.data.get('category'))
-        geners = []
-        for slug in self.request.data.getlist('genre'):
-            genre = get_object_or_404(Genre, slug=slug)
-            geners.append(genre)
-        serializer.save(category=category, genre=geners)
+    filterset_class = TitleFilter
 
 
 class CategoryList(generics.ListCreateAPIView):
@@ -133,19 +138,22 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     lookup_field = 'username'
     serializer_class = UserSerializer
-    permission_classes = [AdminPermission]
+    permission_classes = (AdminPermission,)
+    pagination_class = PageNumberPagination
 
 
 class UserInfo(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request):
         queryset = User.objects.get(username=request.user.username)
         serializer = UserSerializer(queryset)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
     def patch(self, request):
         user = User.objects.get(username=request.user.username)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data)
+        return Response(serializer.errors)

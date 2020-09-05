@@ -17,7 +17,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 class IsAuthenticatedRole(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
+        if request.method == 'GET':#permissions.SAFE_METHODS:
             return True
-        elif request.user.is_authenticated:
-            return obj.author == request.user or request.user.role in ('admin', 'moderator')
+        # elif request.user.is_active:
+        return obj.author.id == request.user.id or request.user.role in ('admin', 'moderator')

@@ -82,14 +82,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         exclude =['title',]
-        #fields = '__all__'
         model = Review
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset = Review.objects.all(),
-        #         fields=['author', 'title']
-        #     )
-        # ]
 
 
 class CommentSerializer(serializers.ModelSerializer):

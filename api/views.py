@@ -18,6 +18,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.permissions import IsAuthenticated
 
 
+
+from api.exception import UniqueReviewException
 from .models import Category, Genre, Title, User, Review, Comment
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, EmailSerializer, TokenGainSerializer, \
     UserSerializer, ReviewSerializer, CommentSerializer
@@ -27,7 +29,6 @@ from .permissions import AdminPermission, IsAdminOrReadOnly, IsAuthenticatedRole
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     UserSerializer
-from .permissions import AdminPermission, IsAdminOrReadOnly
 from .filters import TitleFilter
 
 
@@ -75,19 +76,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
-        reviews = get_object_or_404(Title, id=title_id).reviews
+        reviews = get_object_or_404(Title, pk=title_id).reviews
         return reviews.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
         author = self.request.user
+        if Review.objects.filter(author=author, title=title):
+            raise UniqueReviewException
         serializer.save(author=author, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedRole,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')

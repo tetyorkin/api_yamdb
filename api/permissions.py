@@ -20,4 +20,4 @@ class IsAuthenticatedRole(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         elif request.user.is_authenticated:
-            return obj.author == request.user and request.user.role in ('admin', 'moderator')
+            return obj.author == request.user or request.user.role in ('admin', 'moderator')

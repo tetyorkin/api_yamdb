@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from django.shortcuts import get_object_or_404
 
 from .models import Category, Genre, Title, User, Review, Comment
+from django.db.models import Avg
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -20,10 +21,14 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(required=False, read_only=True)
     genre = GenreSerializer(required=False, many=True, read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category', 'rating')
         model = Title
+
+    def get_rating(self, obj):
+        return obj.reviews.aggregate(Avg('score'))['score__avg']
 
     def get_objects_by_slug(self, validated_data):
         if self.initial_data.get('category'):
@@ -69,19 +74,22 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    #title = serializers.SlugRelatedField(slug_field='name', queryset=Title.objects.all())
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
-        fields = '__all__'
+        exclude =['title',]
+        #fields = '__all__'
         model = Review
-    
-    def validate(self, data):
-        title = data['title']
-        author = data['author']
-        if title.reviews.filter(author=author):
-            raise serializers.ValidationError('Error')
-        return data
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset = Review.objects.all(),
+        #         fields=['author', 'title']
+        #     )
+        # ]
 
 
 class CommentSerializer(serializers.ModelSerializer):

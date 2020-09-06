@@ -15,7 +15,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 
 
@@ -90,20 +90,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedRole,)
+    permission_classes = (IsAuthenticatedRole, IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        reviews = get_object_or_404(Title, pk=title_id).reviews.all()
         review_id = self.kwargs.get('review_id')
-        comment = get_object_or_404(reviews, pk=review_id).comments
-        return comment.all()
+        comments = get_object_or_404(Review, id=review_id).comments
+        return comments.order_by('pub_date')
 
     def perform_create(self, serializer):
-        #title_id = self.kwargs.get('title_id')
-        #reviews = get_object_or_404(Title, pk=title_id).reviews.all()
         review_id = self.kwargs.get('review_id')
-        serializer.save(author=self.request.user)
+        review = get_object_or_404(Review, id=review_id)
+        author = self.request.user
+        serializer.save(author=author,review=review)
 
 @api_view(['POST'])
 def send_confirmation_code(request):

@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserManager(BaseUserManager):
@@ -12,7 +11,9 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password, **kwargs):
-        user = self.model(email=email, is_staff=True, is_superuser=True, **kwargs)
+        user = self.model(
+            email=email, is_staff=True, is_superuser=True, **kwargs
+        )
         user.set_password(password)
         user.save()
         return user
@@ -26,11 +27,14 @@ class User(AbstractUser):
 
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=10, choices=UserRole.choices, default=UserRole.user)
+    role = models.CharField(
+        max_length=10, choices=UserRole.choices, default=UserRole.user
+    )
     bio = models.TextField(max_length=500, blank=True, null=True)
-    first_name = models.CharField(_('first name'), max_length=30, blank=True, null=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True, null=True)
-    objects = CustomUserManager()
+    first_name = models.CharField( max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+
+
 
 
 class Category(models.Model):
@@ -54,16 +58,26 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(blank=True, null=True)
     description = models.CharField(max_length=100, blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name='titles')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='titles'
+    )
 
     def __str__(self):
         return self.name
 
 
 class Review(models.Model):
-    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name='review')
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='review'
+    )
     text = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='review')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='review'
+    )
     score = models.IntegerField()
     pub_date = models.DateTimeField(auto_now_add=True)
 
@@ -72,9 +86,13 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='comment')
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name='comment'
+    )
     text = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='comment'
+    )
     pub_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

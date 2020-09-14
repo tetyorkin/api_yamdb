@@ -1,22 +1,5 @@
-from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **kwargs):
-        user = self.model(email=email, **kwargs)
-        user.set_password(password)
-        user.save()
-        return user
-
-    def create_superuser(self, email, password, **kwargs):
-        user = self.model(
-            email=email, is_staff=True, is_superuser=True, **kwargs
-        )
-        user.set_password(password)
-        user.save()
-        return user
 
 
 class User(AbstractUser):
@@ -31,10 +14,16 @@ class User(AbstractUser):
         max_length=10, choices=UserRole.choices, default=UserRole.user
     )
     bio = models.TextField(max_length=500, blank=True, null=True)
-    first_name = models.CharField( max_length=30, blank=True, null=True)
+    first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
 
+    @property
+    def is_admin(self):
+        return self.role == User.UserRole.admin or self.is_superuser
 
+    @property
+    def is_moderator(self):
+        return self.role == User.UserRole.moderator
 
 
 class Category(models.Model):
@@ -55,7 +44,9 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=100)
-    year = models.PositiveSmallIntegerField(blank=True, null=True)
+    year = models.PositiveSmallIntegerField(
+        blank=True, null=True, db_index=True
+    )
     description = models.CharField(max_length=100, blank=True, null=True)
     genre = models.ManyToManyField(Genre, blank=True)
     category = models.ForeignKey(
@@ -79,7 +70,7 @@ class Review(models.Model):
         User, on_delete=models.CASCADE, related_name='review'
     )
     score = models.IntegerField()
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.text
@@ -93,7 +84,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comment'
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
+    pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return self.text

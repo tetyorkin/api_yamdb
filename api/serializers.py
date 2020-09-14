@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from .models import Category, Comment, Genre, Review, User, Title
+from .models import Category, Comment, Genre, Review, Title, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
         review_is = title.review.filter(author=self.context['request'].user)
         if review_is.exists():
-            raise ValidationError('Тут пишем ошибку')
+            raise ValidationError('Отзыв уже есть!')
         return data
 
 

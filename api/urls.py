@@ -16,8 +16,12 @@ router.register(
     CommentViewSet, basename='comments'
 )
 
+auth = [
+    path('email/', views.send_confirmation_code),
+    path('token/', views.get_jwt_token),
+]
+
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('v1/auth/email/', views.send_confirmation_code),
-    path('v1/auth/token/', views.get_jwt_token),
+    path('v1/auth/', include(auth)),
 ]

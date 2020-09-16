@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
@@ -69,7 +70,13 @@ class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='review'
     )
-    score = models.IntegerField()
+    score = models.PositiveIntegerField(
+        null=False,
+        default=5,
+        validators=(
+            MinValueValidator(1), MaxValueValidator(10)
+        )
+    )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):

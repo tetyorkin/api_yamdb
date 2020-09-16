@@ -7,13 +7,13 @@ from .models import Category, Comment, Genre, Review, Title, User
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug')
+        exclude = ('id',)
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('name', 'slug')
+        exclude = ('id',)
         model = Genre
 
 
@@ -26,13 +26,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, data):
-        if self.context['request'].method == 'PATCH':
-            return data
-        title = get_object_or_404(
-            Title, pk=self.context['view'].kwargs['title_id']
-        )
-        review_is = title.review.filter(author=self.context['request'].user)
-        if review_is.exists():
+        if (self.context['request'].method == 'POST'
+                and Review.objects.filter(
+                    author=self.context['request'].user,
+                    title_id=self.context['view'].kwargs['title_id']
+                    ).exists()):
             raise ValidationError('Отзыв уже есть!')
         return data
 
@@ -79,7 +77,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only='True',
+        read_only=True,
         default=serializers.CurrentUserDefault()
     )
 
